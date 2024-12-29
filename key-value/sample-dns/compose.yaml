@@ -1,0 +1,80 @@
+version: '3.9'
+services:
+  etcd1:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: etcd1
+    environment:
+      ETCD_NAME: etcd1
+      ETCD_INITIAL_CLUSTER: "etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380"
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: etcd-cluster
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd1:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd1:2380"
+      ETCD_LISTEN_PEER_URLS: "http://0.0.0.0:2380"
+    networks:
+      - etcd-net
+
+  etcd2:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: etcd2
+    environment:
+      ETCD_NAME: etcd2
+      ETCD_INITIAL_CLUSTER: "etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380"
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: etcd-cluster
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd2:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd2:2380"
+      ETCD_LISTEN_PEER_URLS: "http://0.0.0.0:2380"
+    networks:
+      - etcd-net
+
+  etcd3:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: etcd3
+    environment:
+      ETCD_NAME: etcd3
+      ETCD_INITIAL_CLUSTER: "etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380"
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: etcd-cluster
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd3:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd3:2380"
+      ETCD_LISTEN_PEER_URLS: "http://0.0.0.0:2380"
+    networks:
+      - etcd-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: sample-dns-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - etcd-net
+
+
+  jupyterlab:
+    container_name: sample-dns-jupyterlab
+    build:
+      context: .
+      dockerfile: dockerfile
+    links:
+      - 'mysql'
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+    volumes:
+      - ./:/home/jovyan/work
+    ports:
+      - 8888:8888
+    command: start-notebook.sh --NotebookApp.token=''
+    networks:
+      - etcd-net
+
+
+networks:
+  etcd-net:
+    driver: bridge
