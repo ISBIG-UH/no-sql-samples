@@ -2,6 +2,14 @@
 
 
 
+### Operaciones Basicas
+
+Menos restricciones en la insercion, valores repetidos van a sobrescribir el viejo sin ningun tipo de warning
+
+### Como agrupar
+
+utilizar prefijos en las llaves, ademas los criterios para agrupar deben aparecer antes variables
+
 
 
 ## Ejemplo 1: DNS

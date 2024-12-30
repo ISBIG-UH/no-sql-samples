@@ -4,6 +4,7 @@ import random
 # Operations
 CREATE = "CREATE" 
 DELETE= "DELETE"
+RETRIEVE = "RETRIEVE"
 
 # Some random names
 names_pool = [
@@ -38,7 +39,6 @@ device_pool = [
 ]
 
 
-
 def get_random_ip():
     """
     Generate a random IPv4 address.
@@ -49,31 +49,53 @@ def get_random_ip():
     return ".".join(str(random.randint(0, 255)) for _ in range(4))
 
 
-
-
 def create_simulation(iterations, seed):
+    """
+    Simulates a series of operations (CREATE, RETRIEVE, DELETE) on a collection of IPs and devices.
 
-    ips = dict()
+    Args:
+        iterations (int): The number of iterations for the simulation.
+        seed (int): The seed for the random number generator.
+
+    Returns:
+        list: A list of tuples representing the simulation actions and their arguments.
+    """
+
+    ips = dict() # ip -> device
+    ips_inv = dict() # device -> ip
     simulation = []
 
-    for i in range(iterations):
-        if ips and random.random() > 0.5:
-            choice = random.choice(ips)
-            del ips[choice]
+    random.seed(seed)
 
-            simulation.append(DELETE, ip)
-        else:
-            ip = get_random_ip()
-            device_name = f"{random.choice(names_pool)}{random.randint(0,200)}'s {random.choice(device_pool)}"
-            
-            if ips.get(ip):
-                simulation.append((DELETE, ip))
-            
-            simulation.append((CREATE, ip, device_name))
-
-                
-
-
-
+    for _ in range(iterations):
         
+        if len(ips) > 0 and random.random() <= 0.6: # groups DELETE and RETRIEVE because they need a non empty collection
+            
+            key, value = random.choice(list(ips.items()))
+            
+            if random.random() <= 0.3: # 0.2 chance of deletion
+                del ips[key]
+                del ips_inv[value]
+                simulation.append((DELETE, value)) 
+            else: # 0.4 chance of retrieve
+                simulation.append((RETRIEVE, value))
 
+        else: # 0.4 chance of create
+            
+            # get a random device to join the network
+            ip = get_random_ip()
+
+            while True:
+                device_name = f"{random.choice(names_pool)}{random.randint(0,10000)} {random.choice(device_pool)}"
+                if not ips_inv.get(device_name):
+                    break
+            
+            # if the ip already exists delete it first
+            if ips.get(ip):
+                simulation.append((DELETE, ips[ip]))
+            
+            ips[ip] = device_name
+            ips_inv[device_name] = ip
+            simulation.append((CREATE, device_name, ip))
+
+    return simulation
