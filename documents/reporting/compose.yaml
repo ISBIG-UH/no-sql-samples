@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: documents-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3309:3306
+    networks:
+      - documents_network
+
+  mongo:
+    image: mongo:latest
+    container_name: document-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    networks:
+      - documents_network
+
+
+
+  jupyterlab:
+    container_name: documents-jupyterlab
+    build:
+      context: .
+      dockerfile: dockerfile
+    links:
+      - 'mysql'
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+    volumes:
+      - ./:/home/jovyan/work
+    ports:
+      - 8888:8888
+    networks:
+      - documents_network
+    command: start-notebook.sh --NotebookApp.token=''
+
+networks:
+  documents_network:
+    driver: bridge
