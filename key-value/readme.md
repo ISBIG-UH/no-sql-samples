@@ -1,6 +1,23 @@
 # Bases de datos llave-valor
 
+Las bases de datos llave-valor utilizan un sencillo modelo de datos donde: 
 
+- Cada par llave-valor es almacenado utilizando una **estructura de datos** asociativa (*hash table*). 
+- Cada llave debe ser única y representada mediante un `string` el valor puede ser cualquier tipo de datos usualmente representado como un blob
+- La simplicidad de la estructura solo permite operaciones sencillas sobre la colección de llaves (no hay busqueda sobre los valores) (ANADIR, BUSCAR UNA LLAVE, ELIMINAR), suelen no implementar una lenguaje de consulta como SQL
+
+Cuales son las ventajas de esta simplicidad de este modelo
+
+- Alto rendimiento: La falta de restricciones de integridad, el almacenamiento de los valores como blobs de datos (permitiendo mayor compresion), la falta de un lenguaje de consulta que tenga que ser compilado y optimizado.
+
+
+A **key-value store**, or key-value database is a simple database that uses an associative array (think of a map or dictionary) as the fundamental data model where each key is associated with one and only one value in a collection. This relationship is referred to as a key-value pair.
+
+In each key-value pair the key is represented by an arbitrary string such as a filename, URI or hash. The value can be any kind of data like an image, user preference file or document. The value is stored as a blob requiring no upfront data modeling or schema definition.
+
+The storage of the value as a blob removes the need to index the data to improve performance. However, you cannot filter or control what’s returned from a request based on the value because the value is opaque.
+
+In general, key-value stores have no query language. They provide a way to store, retrieve and update data using simple ***get, put\*** and ***delete\*** commands; the path to retrieve data is a direct request to the object in memory or on disk. The simplicity of this model makes a key-value store fast, easy to use, scalable, portable and flexible.
 
 ### Operaciones Basicas
 
@@ -52,4 +69,22 @@ Se desplegó una red en Docker consistente en una instancia de etcd, una de MySQ
 Para un total de 100000 operaciones etcd tomó solo 2 min y 36 segs mientras MySQL tomó 23 mins y 30 segs, unas 10 veces más tiempo. Si bien hay que considerar las posibles diferencias en la implementación de los clientes en Python para cada sistema. El código del experimento se encuentra en el archivo `experiment.ipynb`
 
 ## Ejemplo 2: Cache (In - Memory)
+
+
+
+
+
+Ejercicio
+
+
+
+Se quieren almacenar los datos provistos por satelites acerca del tiempo
+
+Por cada pais se conoce la temperature, presion y la temperatura
+
+Almacene estos datos en una base de datos llave valor
+
+Como hacer para recuperar los datos para un pais determinado 
+
+Que ocurre si ademas del pais se tuviera la localidad o la ciudad
 

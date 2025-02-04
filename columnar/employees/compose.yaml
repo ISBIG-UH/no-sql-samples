@@ -1,0 +1,53 @@
+version: '3.9'
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: columnar-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3309:3306
+    networks:
+      - columnar_network
+    volumes:
+      - ./test_db:/test_db
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+  
+  monetdb:
+    image: monetdb/monetdb:latest
+    container_name: columnar-monetdb
+    environment:
+      - MDB_DB_ADMIN_PASS=monetdb
+      - MDB_CREATE_DBS=sakila-db
+    ports:
+      - "50001:50000"  # Expose the default MonetDB port
+    volumes:
+      - ./dimensional:/dimensional
+    networks:
+      - columnar_network
+
+
+  jupyterlab:
+    container_name: columnar-jupyterlab
+    build:
+      context: .
+      dockerfile: dockerfile
+    links:
+      - 'mysql'
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+    volumes:
+      - ./:/home/jovyan/work
+    ports:
+      - 8888:8888
+    networks:
+      - columnar_network
+    command: start-notebook.sh --NotebookApp.token=''
+
+networks:
+  columnar_network:
+    external: true
