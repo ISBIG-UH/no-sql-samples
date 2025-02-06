@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  
+  neo4j:
+    image: neo4j:latest
+    container_name: graphs-neo4j
+    ports:
+      - "7475:7474"
+      - "7688:7687"  
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    networks:
+      - graphs_network
+    volumes:
+      - ./twitter-v2/data/twitter-v2-50.dump:/twitter/data/neo4j.dump
+      - ./init-db.sh:/init-db.sh
+    command: bash /init-db.sh
+
+  jupyterlab:
+    container_name: graphs-jupyterlab
+    build:
+      context: .
+      dockerfile: dockerfile
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+    volumes:
+      - ./:/home/jovyan/work
+    ports:
+      - 8888:8888
+    networks:
+      - graphs_network
+    command: start-notebook.sh --NotebookApp.token=''
+
+networks:
+  graphs_network:
+    driver: bridge
